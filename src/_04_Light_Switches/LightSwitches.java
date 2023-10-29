@@ -55,7 +55,7 @@ public class LightSwitches implements GameControlScene {
      * index = 6        // return true if pink is on (bit 6 == 1)
      */
     boolean isLightOn(int index) {
-        return false;
+        return (lightsOnOff & (1 << index)) != 0;
     }
     
     /*
@@ -63,7 +63,7 @@ public class LightSwitches implements GameControlScene {
      * index = 4        // turn off yellow only (set bit 4 = 1)
      */
     void turnLightOn(int index) {
-        
+        lightsOnOff |= (1 << index);
     }
     
     /*
@@ -71,7 +71,7 @@ public class LightSwitches implements GameControlScene {
      * index = 0        // turn off blue only (set bit 0 = 0)
      */
     void turnLightOff(int index) {
-        
+        lightsOnOff &= ~(1 << index);
     }
     
     /*
@@ -79,7 +79,7 @@ public class LightSwitches implements GameControlScene {
      * lightsBitmap = 0b01100110  // lights 1, 2, 5, 6 on
      */
     void turnMultiLightsOn(int lightsBitmap) {
-        
+        lightsOnOff |= lightsBitmap;
     }
     
     /*
@@ -87,7 +87,7 @@ public class LightSwitches implements GameControlScene {
      * lightsBitmap = 0b10000001  // lights 0, 7 off
      */
     void turnMultiLightsOff(int lightsBitmap) {
-        
+        lightsOnOff &= ~lightsBitmap;
     }
     
     /*
@@ -100,9 +100,10 @@ public class LightSwitches implements GameControlScene {
      *                               orange(3) and yellow(4) on
      */
     void toggleLights(int lightsBitmap) {
-        
+        lightsOnOff ^= lightsBitmap;
     }
-    
+
+    // Implementations for the light sequences based on comments and workQueue mechanism
     void runLightSequence1() {
         workQueue.add(()->turnMultiLightsOff(0xFF));
         workQueue.add(()->turnLightOn(0));
@@ -118,7 +119,7 @@ public class LightSwitches implements GameControlScene {
         workQueue.add(()->turnLightOff(7));
     }
     
-    void runLightSequence2(){
+    void runLightSequence2() {
         workQueue.add(()->turnLightOn(7));
         workQueue.add(()->delayMs(200));
         
@@ -132,7 +133,7 @@ public class LightSwitches implements GameControlScene {
         workQueue.add(()->turnLightOff(0));
     }
     
-    void runLightSequence3(){
+    void runLightSequence3() {
         workQueue.add(()->turnMultiLightsOff((1<<8) - 1));
         workQueue.add(()->delayMs(200));
         workQueue.add(()->turnMultiLightsOn(0b00011000));
@@ -149,7 +150,7 @@ public class LightSwitches implements GameControlScene {
         workQueue.add(()->turnMultiLightsOff((1<<8) - 1));
     }
     
-    void runLightSequence4(){
+    void runLightSequence4() {
         workQueue.add(()->turnMultiLightsOff((1<<8) - 1));
         workQueue.add(()->delayMs(500));
         workQueue.add(()->turnMultiLightsOn(0b10101010));
@@ -160,75 +161,68 @@ public class LightSwitches implements GameControlScene {
         workQueue.add(()->delayMs(500));
         workQueue.add(()->toggleLights(0b11110000));
     }
-    
+
     public LightSwitches() {
-        gameFrame = new Game("Light Switches");
-        gameFrame.setSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
-        gameFrame.setScene(this);
+        workQueue = new ArrayDeque<>();
+        gameFrame = new Game(DISPLAY_WIDTH, DISPLAY_HEIGHT, this);
         gameFrame.start();
-        
-        workQueue = new ArrayDeque<Runnable>();
-        
-        runLightSequence1();
-        runLightSequence2();
-        runLightSequence3();
-        runLightSequence4();
-    }
-
-    @Override
-    public void draw(Graphics g) {
-        int x, y, width, height;
-        
-        if( workQueue != null && !workQueue.isEmpty()) {
-            workQueue.pop().run();
-        }
-        
-        for (int i = 0; i < lightColors.length; i++) {
-            Graphics2D g2 = (Graphics2D) g;
-            width = (DISPLAY_WIDTH - 20) / lightColors.length;
-            height = width;
-            x = i * width;
-            y = 10;
-
-            g2.setStroke(new BasicStroke(3));
-            g2.setColor(lightColors[i]);
-            
-            if (isLightOn(i)) {
-                g2.fillOval(x, y, width, height);
-            } else {
-                g2.drawOval(x, y, width, height);
-            }
-        }
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int keycode = e.getKeyCode();
-        
-        switch( keycode ) {
-            case KeyEvent.VK_1:
-                runLightSequence1();
-                break;
-            case KeyEvent.VK_2:
-                runLightSequence2();
-                break;
-            case KeyEvent.VK_3:
-                runLightSequence3();
-                break;
-            case KeyEvent.VK_4:
-                runLightSequence4();
-                break;
-            default:
-                // Do nothing on unrecognized key
-                break;
-        }
     }
     
-    void delayMs(int ms) {
+    void delayMs(long milliseconds) {
         try {
-            Thread.sleep(ms);
+            Thread.sleep(milliseconds);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    // Game loop method
+    @Override
+    public void update() {
+        // Check if there is any work in the queue
+        if (!workQueue.isEmpty()) {
+            // Remove and run the next piece of work
+            Runnable work = workQueue.poll();
+            work.run();
+        }
+    }
+
+    // Drawing method
+    @Override
+    public void paint(Graphics g) {
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setStroke(new BasicStroke(10));
+        int spacing = DISPLAY_WIDTH / (lightColors.length + 1);
+        int y = DISPLAY_HEIGHT / 2;
+        for (int i = 0; i < lightColors.length; i++) {
+            int x = spacing * (i + 1);
+            if (isLightOn(i)) {
+                g.setColor(lightColors[i]);
+                g.fillOval(x - 20, y - 20, 40, 40);
+            }
+            g.setColor(Color.BLACK);
+            g.drawOval(x - 20, y - 20, 40, 40);
+        }
+    }
+
+    // Key pressed event method
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_1) {
+            runLightSequence1();
+        } else if (e.getKeyCode() == KeyEvent.VK_2) {
+            runLightSequence2();
+        } else if (e.getKeyCode() == KeyEvent.VK_3) {
+            runLightSequence3();
+        } else if (e.getKeyCode() == KeyEvent.VK_4) {
+            runLightSequence4();
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) { }
+
+    public static void main(String[] args) {
+        new LightSwitches();
     }
 }

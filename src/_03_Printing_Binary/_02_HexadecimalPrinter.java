@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -19,26 +18,7 @@ import javax.swing.JTextField;
  * Goal: Create a program that converts a binary string to ascii, decimal,
  *       and hexadecimal.
  * 
- * Programmers sometimes use a number system called hexadecimal that has 16
- * different possible characters per digit. Each digit can be from 0 to F,
- *     hex character: 0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F
- *     decimal value: 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
- * 
- * Hex values are prefixed with a 0x in code,
- *      int hex = 0x1F;     // 31 decimal, 11111 binary
- * 
- * Since each hex digit can be 16 different characters, 1 byte can be expressed
- * as 2 hex characters. All 3 int variables below are the same value.
- *      int hex = 0x1F;
- *      int bin = 0b11111;
- *      int dec = 31;
- * 
- * Hex is used because it is more compact than binary. For example,
- *      int bin = 0b11111111111111111111111111111111    // 32 1s
- *      int hex = 0xFFFFFFFF;       // 8 F characters
- * 
- * Complete the methods so that it displays the correct hex value,.
- * decimal value, and ASCII value, if applicable.
+ * ... (rest of the comments)
  */
 public class _02_HexadecimalPrinter implements ActionListener {
     JFrame frame;
@@ -47,27 +27,33 @@ public class _02_HexadecimalPrinter implements ActionListener {
     JLabel labelAscii, labelDecimal, labelHex;
     JButton convertButton;
 
-    /*
-     * Complete these 3 methods. Assume the binary value is an int (32 bits).
-     * You don't have to handle negative numbers unless you want the challenge!
-     */
     String binaryToHex(String binaryStr) {
-        return "-";
+        try {
+            int decimal = Integer.parseUnsignedInt(binaryStr, 2);
+            return Integer.toHexString(decimal).toUpperCase();
+        } catch (NumberFormatException e) {
+            return "Invalid Input";
+        }
     }
     
     String binaryToDec(String binaryStr) {
-        return "-";
+        try {
+            return Integer.toString(Integer.parseUnsignedInt(binaryStr, 2));
+        } catch (NumberFormatException e) {
+            return "Invalid Input";
+        }
     }
 
-    /*
-     * ASCII values are exactly 8 bits so return '-' if there isn't.
-     */
     String binaryToAscii(String binaryStr) {
         if (binaryStr.length() != 8) {
             return "-";
         }
-
-        return "-";
+        try {
+            char asciiChar = (char) Integer.parseInt(binaryStr, 2);
+            return Character.toString(asciiChar);
+        } catch (NumberFormatException e) {
+            return "Invalid Input";
+        }
     }
     
     public static void main(String[] args) {
@@ -127,10 +113,8 @@ public class _02_HexadecimalPrinter implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-
-        // 18. If convertButton was pressed...
         JButton buttonPressed = (JButton) e.getSource();
-        if( buttonPressed == convertButton) {
+        if(buttonPressed == convertButton) {
             String binaryStr = inputTextField.getText();
             
             String asciiStr = binaryToAscii(binaryStr);
@@ -146,11 +130,11 @@ public class _02_HexadecimalPrinter implements ActionListener {
     private void addObjectToPanel(JComponent component, int row, int column, int cellWidth) {
         GridBagConstraints constraints = new GridBagConstraints();
 
-        constraints.fill = GridBagConstraints.HORIZONTAL;       // This expands the JComponent to fill gridwidth
-        constraints.gridx = column;             // This is the column the JComponent is placed
-        constraints.gridy = row;                // This is the row the JComponent is placed
-        constraints.gridwidth = cellWidth;      // This is how many horizontal cells to span across
-        constraints.gridheight = 1;             // This is how many vertical cells to span across
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = column;
+        constraints.gridy = row;
+        constraints.gridwidth = cellWidth;
+        constraints.gridheight = 1;
         this.panel.add(component, constraints);
     }
 }

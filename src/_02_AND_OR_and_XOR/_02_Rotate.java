@@ -1,7 +1,6 @@
 package _02_AND_OR_and_XOR;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 
 /*
@@ -29,11 +28,13 @@ import org.junit.jupiter.api.Test;
 public class _02_Rotate {
     
     int rotateLeft(int value, int rotateAmount) {
-        return -1;
+        rotateAmount %= 32;  // Ensure the rotate amount is between 0 and 31
+        return (value << rotateAmount) | (value >>> (32 - rotateAmount));
     }
     
     int rotateRight(int value, int rotateAmount) {
-        return -1;
+        rotateAmount %= 32;  // Ensure the rotate amount is between 0 and 31
+        return (value >>> rotateAmount) | (value << (32 - rotateAmount));
     }
     
     @Test
