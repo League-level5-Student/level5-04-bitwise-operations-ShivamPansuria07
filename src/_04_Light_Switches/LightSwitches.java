@@ -164,7 +164,7 @@ public class LightSwitches implements GameControlScene {
 
     public LightSwitches() {
         workQueue = new ArrayDeque<>();
-        gameFrame = new Game(DISPLAY_WIDTH, DISPLAY_HEIGHT, this);
+        gameFrame = new Game();
         gameFrame.start();
     }
     
@@ -188,7 +188,6 @@ public class LightSwitches implements GameControlScene {
     }
 
     // Drawing method
-    @Override
     public void paint(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(new BasicStroke(10));
@@ -225,4 +224,10 @@ public class LightSwitches implements GameControlScene {
     public static void main(String[] args) {
         new LightSwitches();
     }
+
+	@Override
+	public void draw(Graphics arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 }
