@@ -46,29 +46,62 @@ package _05_Base64_Decoder;
 public class Base64Decoder {
 
     final static char[] base64Chars = {
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-            'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+        'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
     };
 
-    //1. Complete this method so that it returns the index in
-    //   the base64Chars array that corresponds to the passed in char.
-    public static byte convertBase64Char(char c){
-        return 0;
+    // 1. Complete this method so that it returns the index in
+    //    the base64Chars array that corresponds to the passed in char.
+    public static byte convertBase64Char(char c) {
+        for (byte i = 0; i < base64Chars.length; i++) {
+            if (base64Chars[i] == c) {
+                return i;
+            }
+        }
+        throw new IllegalArgumentException("Invalid Base64 character.");
     }
 
-    //2. Complete this method so that it will take in a string that is 4
-    //   characters long and return an array of 3 bytes (24 bits). The byte
-    //   array should be the binary value of the encoded characters.
-    public static byte[] convert4CharsTo24Bits(String s){
-        return null;
+    // 2. Complete this method so that it will take in a string that is 4
+    //    characters long and return an array of 3 bytes (24 bits). The byte
+    //    array should be the binary value of the encoded characters.
+    public static byte[] convert4CharsTo24Bits(String s) {
+        if (s.length() != 4) {
+            throw new IllegalArgumentException("String must be 4 characters long.");
+        }
+
+        int b0 = convertBase64Char(s.charAt(0));
+        int b1 = convertBase64Char(s.charAt(1));
+        int b2 = convertBase64Char(s.charAt(2));
+        int b3 = convertBase64Char(s.charAt(3));
+
+        byte[] bytes = new byte[3];
+        bytes[0] = (byte) ((b0 << 2) | (b1 >> 4));
+        bytes[1] = (byte) (((b1 & 0xF) << 4) | (b2 >> 2));
+        bytes[2] = (byte) (((b2 & 0x3) << 6) | b3);
+
+        return bytes;
     }
 
-    //3. Complete this method so that it takes in a string of any length
-    //   and returns the full byte array of the decoded base64 characters.
+    // 3. Complete this method so that it takes in a string of any length
+    //    and returns the full byte array of the decoded base64 characters.
     public static byte[] base64StringToByteArray(String file) {
-        return null;
+        int length = file.length();
+        if (length % 4 != 0) {
+            throw new IllegalArgumentException("String length must be a multiple of 4.");
+        }
+
+        byte[] result = new byte[length / 4 * 3];
+        int resultIndex = 0;
+        for (int i = 0; i < length; i += 4) {
+            byte[] threeBytes = convert4CharsTo24Bits(file.substring(i, i + 4));
+            for (byte b : threeBytes) {
+                result[resultIndex++] = b;
+            }
+        }
+
+        return result;
     }
 }
